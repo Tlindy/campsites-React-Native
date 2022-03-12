@@ -16,7 +16,7 @@ import { baseUrl } from "../shared/baseUrl";
 import { postFavorite, postComment } from "../redux/ActionCreators";
 import * as Animatable from "react-native-animatable";
 
-const mapStateToProps = (state) => {
+const mapStateToProps = state => {
     return {
         campsites: state.campsites,
         comments: state.comments,
@@ -25,7 +25,7 @@ const mapStateToProps = (state) => {
 };
 
 const mapDispatchToProps = {
-    postFavorite: (campsiteId) => postFavorite(campsiteId),
+    postFavorite: campsiteId => postFavorite(campsiteId),
     postComment: (campsiteId, rating, author, text) =>
         postComment(campsiteId, rating, author, text),
 };
@@ -35,14 +35,16 @@ function RenderCampsite(props) {
 
     const view = React.createRef();
 
-    const recognizeDrag = ({ dx }) => (dx < -200 ? true : false);
+    const recognizeDrag = ({ dx }) => (dx < -200) ? true : false;
+
+    const recognizeComment = ({ dx }) => (dx > 200) ? true : false;
 
     const panResponder = PanResponder.create({
         onStartShouldSetPanResponder: () => true,
         onPanResponderGrant: () => {
             view.current
                 .rubberBand(1000)
-                .then((endState) =>
+                .then(endState =>
                     console.log(endState.finished ? "finished" : "canceled")
                 );
         },
@@ -70,6 +72,8 @@ function RenderCampsite(props) {
                     ],
                     { cancelable: false }
                 );
+            } else if (recognizeComment(gestureState)) {
+                props.onShowModal();
             }
             return true;
         },
@@ -144,7 +148,7 @@ function RenderComments({ comments }) {
                 <FlatList
                     data={comments}
                     renderItem={renderCommentItem}
-                    keyExtractor={(item) => item.id.toString()}
+                    keyExtractor={item => item.id.toString()}
                 />
             </Card>
         </Animatable.View>
@@ -196,10 +200,10 @@ class CampsiteInfo extends Component {
     render() {
         const campsiteId = this.props.navigation.getParam("campsiteId");
         const campsite = this.props.campsites.campsites.filter(
-            (campsite) => campsite.id === campsiteId
+            campsite => campsite.id === campsiteId
         )[0];
         const comments = this.props.comments.comments.filter(
-            (comment) => comment.campsiteId === campsiteId
+            comment => comment.campsiteId === campsiteId
         );
         return (
             <ScrollView>
@@ -221,7 +225,7 @@ class CampsiteInfo extends Component {
                             showRating
                             startingValue={this.state.rating}
                             imageSize={40}
-                            onFinishRating={(rating) =>
+                            onFinishRating={rating =>
                                 this.setState({ rating: rating })
                             }
                             style={{ paddingVertical: 10 }}
@@ -230,7 +234,7 @@ class CampsiteInfo extends Component {
                             placeholder="Author"
                             leftIcon={{ type: "font-awesome", name: "user-o" }}
                             leftIconContainerStyle={{ paddingRight: 10 }}
-                            onChangeText={(author) =>
+                            onChangeText={author =>
                                 this.setState({ author: author })
                             }
                             value={this.state.author}
@@ -242,9 +246,7 @@ class CampsiteInfo extends Component {
                                 name: "comment-o",
                             }}
                             leftIconContainerStyle={{ paddingRight: 10 }}
-                            onChangeText={(text) =>
-                                this.setState({ text: text })
-                            }
+                            onChangeText={text => this.setState({ text: text })}
                             value={this.state.text}
                         />
                         <View>
